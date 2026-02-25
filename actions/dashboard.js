@@ -2,14 +2,13 @@
 
 import { db } from "@/lib/prisma";
 import { auth } from "@clerk/nextjs/server";
-import { GoogleGenerativeAI } from "@google/generative-ai";
-
+import { GoogleGenerativeAI } from "@google/generative-ai"; 
 const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
-const model = genAI.getGenerativeModel({
-    model: "gemini-1.5-flash",
-})
+
+const model = genAI.getGenerativeModel({ model: "gemini-3-flash-preview" });
 export const generateAIInsights= async(industry)=>{
-     const prompt = `
+
+   const prompt = `
           Analyze the current state of the ${industry} industry and provide insights in ONLY the following JSON format without any additional notes or explanations:
           {
             "salaryRanges": [
@@ -27,32 +26,35 @@ export const generateAIInsights= async(industry)=>{
           Include at least 5 common roles for salary ranges.
           Growth rate should be a percentage.
           Include at least 5 skills and trends.
+        
+    - "demandLevel" MUST be exactly "HIGH", "MEDIUM", or "LOW".
+    - "marketOutlook" MUST be exactly "POSITIVE", "NEUTRAL", or "NEGATIVE".
+    - Return ONLY the JSON object.
         `;
-        const result = await model.generateContent(prompt)
-        const response = result.response;
-        const text = response.text()
-
- const cleanedText = text.replace(/```(?:json)?\n?/g, "").trim();
+        const result = await model.generateContent(prompt);
+  const response = result.response;
+  const text = response.text();
+  const cleanedText = text.replace(/```(?:json)?\n?/g, "").trim();
 
   return JSON.parse(cleanedText);
-
 };
-
 
 export async function getIndustryInsights(){
     const {userId} = await auth();
     if (!userId) throw new Error ("Unauthorized");
 
-    const user = await db.user.findUnique({
-        where: {
-            clerkUserId: userId,
-        },
-    });
+   const user = await db.user.findUnique({
+    where: { clerkUserId: userId },
+    include: {
+      industryInsight: true,
+    },
+  });
+
 
     if (!user) throw new Error("User not found");
 
-    if(!user.getIndustryInsight){
-        const insights = await generateAIInsights(user.industy);
+    if(!user.industryInsight){
+        const insights = await generateAIInsights(user.industry);
 
         const industryInsight = await db.industryInsight.create({
             data: {
