@@ -1,7 +1,6 @@
 "use client";
 
 import React from "react";
-
 import {
   BarChart,
   Bar,
@@ -11,7 +10,6 @@ import {
   Tooltip,
   ResponsiveContainer,
 } from "recharts";
-
 import {
   BriefcaseIcon,
   LineChart,
@@ -19,9 +17,7 @@ import {
   TrendingDown,
   Brain,
 } from "lucide-react";
-
 import { format, formatDistanceToNow } from "date-fns";
-
 import {
   Card,
   CardContent,
@@ -29,18 +25,18 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-
 import { Badge } from "@/components/ui/badge";
-
 import { Progress } from "@/components/ui/progress";
 
 const DashboardView = ({ insights }) => {
+  // Transform salary data for the chart
   const salaryData = insights.salaryRanges.map((range) => ({
     name: range.role,
-    min: range.min / 1000,
-    max: range.max / 1000,
-    median: range.median / 1000,
+    min: range.min / 10000,
+    max: range.max / 10000,
+    median: range.median / 10000,
   }));
+
 
 
   const getDemandLevelColor = (level) => {
@@ -55,7 +51,6 @@ const DashboardView = ({ insights }) => {
         return "bg-gray-500";
     }
   };
-
 
   const getMarketOutlookInfo = (outlook) => {
     switch (outlook.toLowerCase()) {
@@ -73,15 +68,14 @@ const DashboardView = ({ insights }) => {
   const OutlookIcon = getMarketOutlookInfo(insights.marketOutlook).icon;
   const outlookColor = getMarketOutlookInfo(insights.marketOutlook).color;
 
-    const lastUpdatedDate = format(new Date(insights.lastUpdated), "dd/MM/yyyy");
-    
+  // Format dates using date-fns
+  const lastUpdatedDate = format(new Date(insights.lastUpdated), "dd/MM/yyyy");
   const nextUpdateDistance = formatDistanceToNow(
     new Date(insights.nextUpdate),
     { addSuffix: true }
   );
 
-
-return (
+  return (
     <div className="space-y-6">
       <div className="flex justify-between items-center">
         <Badge variant="outline">Last updated: {lastUpdatedDate}</Badge>
@@ -154,9 +148,9 @@ return (
       {/* Salary Ranges Chart */}
       <Card className="col-span-4">
         <CardHeader>
-          <CardTitle>Salary Ranges by Role</CardTitle>
+          <CardTitle>Salary Packages Ranges by Role</CardTitle>
           <CardDescription>
-            Displaying minimum, median, and maximum salaries (in thousands)
+            Displaying minimum, median, and maximum salaries packages LPA
           </CardDescription>
         </CardHeader>
         <CardContent>
@@ -165,7 +159,7 @@ return (
               <BarChart data={salaryData}>
                 <CartesianGrid strokeDasharray="3 3" />
                 <XAxis dataKey="name" />
-                <YAxis />
+                <YAxis tickFormatter={(value) => `${value} L`}  />
                 <Tooltip
                   content={({ active, payload, label }) => {
                     if (active && payload && payload.length) {
@@ -174,7 +168,7 @@ return (
                           <p className="font-medium">{label}</p>
                           {payload.map((item) => (
                             <p key={item.name} className="text-sm">
-                              {item.name}: ${item.value}K
+                              {item.name}:  ₹  {item.value}L
                             </p>
                           ))}
                         </div>

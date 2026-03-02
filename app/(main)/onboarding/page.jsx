@@ -1,3 +1,5 @@
+
+
 import { redirect } from "next/navigation";
 import { getUserOnboardingStatus } from "@/actions/user";
 import { industries } from "@/data/industries";
